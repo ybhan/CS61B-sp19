@@ -1,4 +1,4 @@
-public class ArrayDeque<T> {
+public class ArrayDeque<T> implements Deque<T> {
     private int size;
     private T[] items;
     private int capacity;
@@ -6,7 +6,7 @@ public class ArrayDeque<T> {
     private int nextLast = 1;
     private int RESIZE_FACTOR = 2;
     private double USAGE_RATIO = 0.25;
-    private int CAPACITY_BASE = 16;
+    private int CAPACITY_MIN = 16;
 
     /** Construct an empty ArrayDeque. */
     public ArrayDeque() {
@@ -28,6 +28,7 @@ public class ArrayDeque<T> {
         this.capacity = capacity;
     }
 
+    @Override
     public void addFirst(T item) {
         if (isFull()) {
             expandArray(RESIZE_FACTOR);
@@ -37,6 +38,7 @@ public class ArrayDeque<T> {
         nextFirst = indexAdd(nextFirst, -1);
     }
 
+    @Override
     public void addLast(T item) {
         if (isFull()) {
             expandArray(RESIZE_FACTOR);
@@ -46,14 +48,12 @@ public class ArrayDeque<T> {
         nextLast = indexAdd(nextLast, 1);
     }
 
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public void printDeque() {
         for (int i = 0; i < size; i++) {
             System.out.print(get(i) + " ");
@@ -61,6 +61,7 @@ public class ArrayDeque<T> {
         System.out.println();
     }
 
+    @Override
     public T removeFirst() {
         if (isEmpty()) {
             return null;
@@ -76,6 +77,7 @@ public class ArrayDeque<T> {
         return first;
     }
 
+    @Override
     public T removeLast() {
         if (isEmpty()) {
             return null;
@@ -91,6 +93,7 @@ public class ArrayDeque<T> {
         return last;
     }
 
+    @Override
     public T get(int index) {
         if (index >= size) {
             return null;
@@ -104,7 +107,7 @@ public class ArrayDeque<T> {
     }
 
     private boolean isSparse() {
-        return (size > CAPACITY_BASE) && size < (capacity * USAGE_RATIO);
+        return (size > CAPACITY_MIN) && size < (capacity * USAGE_RATIO);
     }
 
     /** Resize ArrayDeque to have factor*capacity. */
