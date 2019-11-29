@@ -3,7 +3,7 @@ import java.util.HashSet;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
-/** Tests of optional parts of lab 8. */
+/** Tests of optional parts of lab 7. */
 public class TestBSTMapExtra {
 
     /*
