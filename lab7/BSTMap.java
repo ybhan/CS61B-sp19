@@ -138,14 +138,14 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
         V valueToRemove = get(key);
         if (valueToRemove != value) {
-            throw new IllegalArgumentException("key and value doesn't match.");
+            throw new IllegalArgumentException("key and value don't match.");
         }
         root = remove(key, root);
         size -= 1;
         return valueToRemove;
     }
 
-    /** Return the node after removing key from it. */
+    /** Return the modified node after removing key from it. */
     private Node<K, V> remove(K key, Node<K, V> node) {
         if (node == null) {
             return null;

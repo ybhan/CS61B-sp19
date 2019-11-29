@@ -123,6 +123,10 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
             throw new IllegalArgumentException();
         }
 
+        if (value == null) {
+            remove(key);
+        }
+
         if (size + 1 > threshold) {
             resize();
         }
@@ -154,14 +158,36 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     @Override
     public V remove(K key) {
-        // TODO
-        throw new UnsupportedOperationException();
+        int keyHash = hash(key);
+        V valueToRemove = get(key);
+        if (valueToRemove == null) {
+            return null;
+        }
+        hashTable[keyHash] = remove(key, hashTable[keyHash]);
+        return valueToRemove;
     }
 
     @Override
     public V remove(K key, V value) {
-        // TODO
-        throw new UnsupportedOperationException();
+        int keyHash = hash(key);
+        V valueToRemove = get(key);
+        if (valueToRemove != value) {
+            throw new IllegalArgumentException("key and value don't match.");
+        }
+        hashTable[keyHash] = remove(key, hashTable[keyHash]);
+        return valueToRemove;
+    }
+
+    /** Return the modified BucketEntity after removing key from it. */
+    private BucketEntity<K, V> remove(K key, BucketEntity<K, V> be) {
+        if (be == null) {
+            return null;
+        }
+        if (be.key.equals(key)) {
+            return be.next;
+        }
+        be.next = remove(key, be.next);
+        return be;
     }
 
     @Override
