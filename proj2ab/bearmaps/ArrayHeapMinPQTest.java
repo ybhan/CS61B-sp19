@@ -1,5 +1,6 @@
 package bearmaps;
 
+import edu.princeton.cs.algs4.StdRandom;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -92,7 +93,7 @@ public class ArrayHeapMinPQTest {
 
         long start2 = System.currentTimeMillis();
         for (int j = 0; j < 10000; j += 1) {
-            minHeap.changePriority(j, j + 1);
+            minHeap.changePriority(StdRandom.uniform(0, minHeap.size()), j);
         }
         long end2 = System.currentTimeMillis();
         System.out.println("Total time elapsed: " + (end2 - start2) / 1000.0 +  " seconds.");
