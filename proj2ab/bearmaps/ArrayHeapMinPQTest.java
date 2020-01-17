@@ -41,7 +41,7 @@ public class ArrayHeapMinPQTest {
         minHeap.add(3, 3);
         minHeap.add(4, 4);
         minHeap.add(5, 0);
-        minHeap.add(6, 3);
+        minHeap.add(6, 3.5);
         assertEquals(5, (int) minHeap.getSmallest());
     }
 
@@ -51,18 +51,19 @@ public class ArrayHeapMinPQTest {
         minHeap.add(1, 1);
         minHeap.add(2, 2);
         minHeap.add(3, 3);
-        minHeap.add(4, 4);
-        minHeap.add(5, 0);
-        minHeap.add(6, 3.5);
-        minHeap.add(7, 4);
+        minHeap.add(4, 7);
+        minHeap.add(5, 6);
+        minHeap.add(6, 4);
+        minHeap.add(7, 5);
         minHeap.add(8, 8);
-        minHeap.add(9, 8);
-        minHeap.add(10, 8);
-        assertEquals(5, (int) minHeap.removeSmallest());
         assertEquals(1, (int) minHeap.removeSmallest());
         assertEquals(2, (int) minHeap.removeSmallest());
         assertEquals(3, (int) minHeap.removeSmallest());
-        assertEquals(6, (int) minHeap.getSmallest());
+        assertEquals(6, (int) minHeap.removeSmallest());
+        assertEquals(7, (int) minHeap.removeSmallest());
+        assertEquals(5, (int) minHeap.removeSmallest());
+        assertEquals(4, (int) minHeap.removeSmallest());
+        assertEquals(8, (int) minHeap.removeSmallest());
     }
 
     @Test

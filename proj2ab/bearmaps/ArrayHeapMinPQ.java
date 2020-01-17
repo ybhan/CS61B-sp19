@@ -67,7 +67,9 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
         itemIndexMap.remove(itemRemoved);
         heap.set(0, heap.get(size() - 1));
         heap.remove(size() - 1);
-        swimDown(0);
+        if (!isEmpty()) {
+            swimDown(0);
+        }
         return itemRemoved;
     }
 
@@ -139,7 +141,8 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
     private int smallerChild(int index) {
         int leftChild = index * 2 + 1;
         leftChild = leftChild < size() ? leftChild : index;
-        int rightChild = leftChild + 1 < size() ? leftChild + 1 : leftChild;
+        int rightChild = index * 2 + 2;
+        rightChild = rightChild < size() ? rightChild : leftChild;
         return heap.get(leftChild).getPriority() < heap.get(rightChild).getPriority()
                 ? leftChild : rightChild;
     }
