@@ -14,7 +14,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /** Test of the written driving directions part of the assignment. This part of the assignment is 
-  * optional and not worth any credit, and these tests should be thought of as just for fun.*/
+  * optional and not worth any credit, and these tests should be thought of as just for fun. */
 public class TestDirections {
     private static final String PATHS_FILE = "../library-sp19/data/proj2c_test_inputs/path_results.txt";
     private static final String RESULTS_FILE = "../library-sp19/data/proj2c_test_inputs/directions_results.txt";

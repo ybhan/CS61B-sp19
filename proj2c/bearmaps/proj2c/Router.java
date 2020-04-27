@@ -1,5 +1,10 @@
 package bearmaps.proj2c;
 
+import bearmaps.hw4.AStarSolver;
+import bearmaps.hw4.WeightedEdge;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -7,7 +12,7 @@ import java.util.regex.Pattern;
 
 /**
  * This class acts as a helper for the RoutingAPIHandler.
- * @author Josh Hug, ______
+ * @author Josh Hug, Yuanbo Han
  */
 public class Router {
 
@@ -24,10 +29,9 @@ public class Router {
      */
     public static List<Long> shortestPath(AugmentedStreetMapGraph g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        //long src = g.closest(stlon, stlat);
-        //long dest = g.closest(destlon, destlat);
-        //return new WeirdSolver<>(g, src, dest, 20).solution();
-        return null;
+        long src = g.closest(stlon, stlat);
+        long dest = g.closest(destlon, destlat);
+        return new AStarSolver<>(g, src, dest, 20).solution();
     }
 
     /**
@@ -35,12 +39,76 @@ public class Router {
      * @param g The graph to use.
      * @param route The route to translate into directions. Each element
      *              corresponds to a node from the graph in the route.
-     * @return A list of NavigatiionDirection objects corresponding to the input
+     * @return A list of NavigationDirection objects corresponding to the input
      * route.
      */
     public static List<NavigationDirection> routeDirections(AugmentedStreetMapGraph g, List<Long> route) {
-        /* fill in for part IV */
-        return null;
+        if (route == null || route.size() < 2) {
+            return null;
+        }
+
+        List<NavigationDirection> results = new ArrayList<>();
+
+        Iterator<Long> routeIter = route.iterator();
+
+        long pre = routeIter.next();
+        long cur = routeIter.next();
+
+        NavigationDirection nd = new NavigationDirection();
+        nd.direction = NavigationDirection.START;
+        nd.distance = -1.0;  // as a flag, meaning the WeightedEdge is not found.
+
+        for (WeightedEdge<Long> we : g.neighbors(pre)) {
+            if (we.to() == cur) {
+                nd.way = (we.getName() == null) ? NavigationDirection.UNKNOWN_ROAD : we.getName();
+                nd.distance = we.weight();
+                break;
+            }
+        }
+        if (nd.distance == -1.0) {
+            throw new IllegalArgumentException("Invalid route.");
+        }
+
+        // Only two points in route
+        if (!routeIter.hasNext()) {
+            results.add(nd);
+            return results;
+        }
+
+        while (routeIter.hasNext()) {
+            long next = routeIter.next();
+
+            WeightedEdge<Long> we = null;  // from pre to cur
+            for (WeightedEdge<Long> weightedEdge : g.neighbors(cur)) {
+                if (weightedEdge.to() == next) {
+                    we = weightedEdge;
+                    break;
+                }
+            }
+            if (we == null) {
+                throw new IllegalArgumentException("Invalid route.");
+            }
+
+            if ((we.getName() == null && !nd.way.equals(NavigationDirection.UNKNOWN_ROAD))
+                    || (we.getName() != null && !we.getName().equals(nd.way))) {
+                results.add(nd);
+
+                nd = new NavigationDirection();
+                nd.direction = NavigationDirection.getDirection(
+                        NavigationDirection.bearing(g.lon(pre), g.lon(cur), g.lat(pre), g.lat(cur)),
+                        NavigationDirection.bearing(g.lon(cur), g.lon(next), g.lat(cur), g.lat(next)));
+                nd.way = (we.getName() == null) ? NavigationDirection.UNKNOWN_ROAD : we.getName();
+                nd.distance = we.weight();
+            } else {
+                nd.distance += we.weight();
+            }
+
+            pre = cur;
+            cur = next;
+        }
+
+        results.add(nd);
+        return results;
     }
 
     /**
@@ -63,7 +131,7 @@ public class Router {
         /** Number of directions supported. */
         public static final int NUM_DIRECTIONS = 8;
 
-        /** A mapping of integer values to directions.*/
+        /** A mapping of integer values to directions. */
         public static final String[] DIRECTIONS = new String[NUM_DIRECTIONS];
 
         /** Default name for an unknown way. */
@@ -81,7 +149,7 @@ public class Router {
             DIRECTIONS[SHARP_RIGHT] = "Sharp right";
         }
 
-        /** The direction a given NavigationDirection represents.*/
+        /** The direction a given NavigationDirection represents. */
         int direction;
         /** The name of the way I represent. */
         String way;
@@ -148,7 +216,7 @@ public class Router {
             }
         }
 
-        /** Checks that a value is between the given ranges.*/
+        /** Checks that a value is between the given ranges. */
         private static boolean numInRange(double value, double from, double to) {
             return value >= from && value <= to;
         }

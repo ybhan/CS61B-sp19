@@ -14,7 +14,7 @@ import static bearmaps.proj2c.utils.Constants.ROUTE_LIST;
 
 /**
  * Handles requests from the web browser for routes between locations. The
- * route will be returned as image data, as well as (optionally) driving directions. *
+ * route will be returned as image data, as well as (optionally) driving directions.
  * Created by rahul
  */
 public class RoutingAPIHandler extends APIRouteHandler<Map<String, Double>, Map<String, Object>> {

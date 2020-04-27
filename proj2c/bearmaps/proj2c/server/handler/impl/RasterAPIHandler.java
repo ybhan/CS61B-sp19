@@ -17,13 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static bearmaps.proj2c.utils.Constants.SEMANTIC_STREET_GRAPH;
-import static bearmaps.proj2c.utils.Constants.ROUTE_LIST;
+import static bearmaps.proj2c.utils.Constants.*;
 
 /**
  * Handles requests from the web browser for map images. These images
  * will be rastered into one large image to be displayed to the user.
- * @author rahul, Josh Hug, _________
+ * @author rahul, Josh Hug, Yuanbo Han
  */
 public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<String, Object>> {
 
@@ -45,6 +44,7 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
     private static final String[] REQUIRED_RASTER_RESULT_PARAMS = {"render_grid", "raster_ul_lon",
             "raster_ul_lat", "raster_lr_lon", "raster_lr_lat", "depth", "query_success"};
 
+    private static final int TILE_MAX_DEPTH = 7;
 
     @Override
     protected Map<String, Double> parseRequestParams(Request request) {
@@ -84,11 +84,64 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        //System.out.println("yo, wanna know the parameters given by the web browser? They are:");
-        //System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
-                + "your browser.");
+
+        // No coverage (query box completely outside of the root longitude/latitude)
+        if (requestParams.get("ullon") > ROOT_LRLON || requestParams.get("lrlon") < ROOT_ULLON
+                || requestParams.get("ullat") < ROOT_LRLAT || requestParams.get("lrlat") > ROOT_ULLAT) {
+            results.put("query_success", false);
+            // Useless arbitrary values
+            results.put("render_grid", null);
+            results.put("raster_ul_lon", 0.0);
+            results.put("raster_ul_lat", 0.0);
+            results.put("raster_lr_lon", 0.0);
+            results.put("raster_lr_lat", 0.0);
+            results.put("depth", 0);
+            return results;
+        }
+
+        results.put("query_success", true);
+
+        // Find appropriate resolution
+        double requestLonDPP = (requestParams.get("lrlon") - requestParams.get("ullon")) / requestParams.get("w");
+        int depth = (int) Math.ceil(Math.log((ROOT_LRLON - ROOT_ULLON) / TILE_SIZE / requestLonDPP) / Math.log(2));
+        depth = Math.max(depth, 0);
+        depth = Math.min(depth, TILE_MAX_DEPTH);
+        results.put("depth", depth);
+
+        int numOfTiles = (int) Math.pow(2, depth);
+
+        // Locate the boundary tiles to cover the query box
+        int xFirst, xLast, yFirst, yLast;
+        xFirst = (int) ((requestParams.get("ullon") - ROOT_ULLON) / (ROOT_LRLON - ROOT_ULLON) * numOfTiles);
+        xLast = (int) Math.ceil((requestParams.get("lrlon") - ROOT_ULLON) / (ROOT_LRLON - ROOT_ULLON) * numOfTiles) - 1;
+        yFirst = (int) ((ROOT_ULLAT - requestParams.get("ullat")) / (ROOT_ULLAT - ROOT_LRLAT) * numOfTiles);
+        yLast = (int) Math.ceil((ROOT_ULLAT - requestParams.get("lrlat")) / (ROOT_ULLAT - ROOT_LRLAT) * numOfTiles) - 1;
+        // Bound checking
+        xFirst = Math.max(xFirst, 0);
+        xLast = Math.min(xLast, numOfTiles - 1);
+        yFirst = Math.max(yFirst, 0);
+        yLast = Math.min(yLast, numOfTiles - 1);
+        // Deal with 1-D query: when query box degrades to a line or even a single point,
+        // we may get xFirst > xLast, xFirst == numOfTiles, etc. above)
+        xFirst = Math.min(xFirst, numOfTiles - 1);
+        xLast = Math.max(xLast, xFirst);
+        yFirst = Math.min(yFirst, numOfTiles - 1);
+        yLast = Math.max(yLast, yFirst);
+
+        results.put("raster_ul_lon", ROOT_ULLON + (ROOT_LRLON - ROOT_ULLON) / numOfTiles * xFirst);
+        results.put("raster_lr_lon", ROOT_ULLON + (ROOT_LRLON - ROOT_ULLON) / numOfTiles * (xLast + 1));
+        results.put("raster_ul_lat", ROOT_ULLAT - (ROOT_ULLAT - ROOT_LRLAT) / numOfTiles * yFirst);
+        results.put("raster_lr_lat", ROOT_ULLAT - (ROOT_ULLAT - ROOT_LRLAT) / numOfTiles * (yLast + 1));
+
+        String[][] render_grid = new String[yLast - yFirst + 1][xLast - xFirst + 1];
+        for (int j = yFirst; j <= yLast; j++) {
+            for (int i = xFirst; i <= xLast; i++) {
+                render_grid[j - yFirst][i - xFirst] = "d" + depth + "_x" + i + "_y" + j + ".png";
+            }
+        }
+        results.put("render_grid", render_grid);
+
         return results;
     }
 
