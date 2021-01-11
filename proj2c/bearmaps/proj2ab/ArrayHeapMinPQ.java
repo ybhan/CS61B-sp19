@@ -64,9 +64,10 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
             throw new NoSuchElementException("The priority queue is empty.");
         }
         T itemRemoved = heap.get(0).getItem();
-        itemIndexMap.remove(itemRemoved);
         heap.set(0, heap.get(size() - 1));
+        itemIndexMap.put(heap.get(0).getItem(), 0);
         heap.remove(size() - 1);
+        itemIndexMap.remove(itemRemoved);
         if (!isEmpty()) {
             swimDown(0);
         }
